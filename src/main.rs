@@ -298,7 +298,7 @@ async fn handle_event(payload: EventsApiPayload) -> anyhow::Result<()> {
         .json()
         .await?;
     if !resp.ok {
-        anyhow::bail!("chat.getPermalink failed: {}", resp.rest);
+        anyhow::bail!("chat.postMessage failed: {}", resp.rest);
     }
     let ts = resp.ts.unwrap();
     tracing::info!(%ts, "posted a permalink");
