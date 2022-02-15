@@ -44,7 +44,6 @@ async fn main() -> anyhow::Result<()> {
         anyhow::bail!("failed to open connection: {}", resp.rest);
     }
     let url = resp.url.unwrap();
-    tracing::info!(%url, "initiated WebSocket mode");
     let (mut ws_stream, resp) = if opt.enable_debug_reconnects {
         tokio_tungstenite::connect_async(format!("{}&debug_reconnects=true", url)).await?
     } else {
