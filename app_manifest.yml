@@ -1,8 +1,8 @@
 display_information:
-  name: thread expander
+  name: thread-expander
 features:
   bot_user:
-    display_name: thread expander
+    display_name: thread-expander
     always_online: false
 oauth_config:
   scopes:
