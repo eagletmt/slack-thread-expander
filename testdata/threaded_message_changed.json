@@ -1,0 +1,131 @@
+{
+  "accepts_response_payload": false,
+  "envelope_id": "ac223415-99bb-4276-b24a-6cb9c8c8d07b",
+  "payload": {
+    "api_app_id": "A032EL23XDM",
+    "authorizations": [
+      {
+        "enterprise_id": null,
+        "is_bot": true,
+        "is_enterprise_install": false,
+        "team_id": "T030KFTTD",
+        "user_id": "U032NL88NNA"
+      }
+    ],
+    "event": {
+      "channel": "C03387UAMQR",
+      "channel_type": "channel",
+      "event_ts": "1644939339.000300",
+      "hidden": true,
+      "message": {
+        "attachments": [
+          {
+            "author_icon": "https://avatars.slack-edge.com/2014-11-16/3020963342_6783d5b5205b0122e53d_48.jpg",
+            "author_id": "U030KFTTF",
+            "author_link": "https://eagletmt.slack.com/team/U030KFTTF",
+            "author_name": "Kohei Suzuki",
+            "author_subname": "Kohei Suzuki",
+            "channel_id": "C03387UAMQR",
+            "channel_name": "thread-expander-sandbox",
+            "channel_team": "T030KFTTD",
+            "fallback": "[February 15th, 2022 7:35 AM] eagletmt: threaded message",
+            "footer": "From a thread in #thread-expander-sandbox",
+            "from_url": "https://eagletmt.slack.com/archives/C03387UAMQR/p1644939337956639?thread_ts=1644938961.726289&amp;cid=C03387UAMQR",
+            "id": 1,
+            "is_msg_unfurl": true,
+            "is_reply_unfurl": true,
+            "message_blocks": [
+              {
+                "channel": "C03387UAMQR",
+                "message": {
+                  "blocks": [
+                    {
+                      "block_id": "4QPY",
+                      "elements": [
+                        {
+                          "elements": [
+                            {
+                              "text": "threaded message",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "rich_text_section"
+                        }
+                      ],
+                      "type": "rich_text"
+                    }
+                  ]
+                },
+                "team": "T030KFTTD",
+                "ts": "1644939337.956639"
+              }
+            ],
+            "mrkdwn_in": [
+              "text"
+            ],
+            "original_url": "https://eagletmt.slack.com/archives/C03387UAMQR/p1644939337956639?thread_ts=1644938961.726289&amp;cid=C03387UAMQR",
+            "text": "threaded message",
+            "ts": "1644939337.956639"
+          }
+        ],
+        "bot_id": "B032XKF51GC",
+        "bot_profile": {
+          "app_id": "A032EL23XDM",
+          "deleted": false,
+          "icons": {
+            "image_36": "https://a.slack-edge.com/80588/img/plugins/app/bot_36.png",
+            "image_48": "https://a.slack-edge.com/80588/img/plugins/app/bot_48.png",
+            "image_72": "https://a.slack-edge.com/80588/img/plugins/app/service_72.png"
+          },
+          "id": "B032XKF51GC",
+          "name": "thread expander",
+          "team_id": "T030KFTTD",
+          "updated": 1644744799
+        },
+        "edited": {
+          "ts": "1644939339.000000",
+          "user": "B032XKF51GC"
+        },
+        "team": "T030KFTTD",
+        "text": "<https://eagletmt.slack.com/archives/C03387UAMQR/p1644939337956639?thread_ts=1644938961.726289&amp;cid=C03387UAMQR>",
+        "ts": "1644939338.601259",
+        "type": "message",
+        "user": "U032NL88NNA"
+      },
+      "previous_message": {
+        "bot_id": "B032XKF51GC",
+        "bot_profile": {
+          "app_id": "A032EL23XDM",
+          "deleted": false,
+          "icons": {
+            "image_36": "https://a.slack-edge.com/80588/img/plugins/app/bot_36.png",
+            "image_48": "https://a.slack-edge.com/80588/img/plugins/app/bot_48.png",
+            "image_72": "https://a.slack-edge.com/80588/img/plugins/app/service_72.png"
+          },
+          "id": "B032XKF51GC",
+          "name": "thread expander",
+          "team_id": "T030KFTTD",
+          "updated": 1644744799
+        },
+        "team": "T030KFTTD",
+        "text": "<https://eagletmt.slack.com/archives/C03387UAMQR/p1644939337956639?thread_ts=1644938961.726289&amp;cid=C03387UAMQR>",
+        "ts": "1644939338.601259",
+        "type": "message",
+        "user": "U032NL88NNA"
+      },
+      "subtype": "message_changed",
+      "ts": "1644939339.000300",
+      "type": "message"
+    },
+    "event_context": "4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDMwS0ZUVEQiLCJhaWQiOiJBMDMyRUwyM1hETSIsImNpZCI6IkMwMzM4N1VBTVFSIn0",
+    "event_id": "Ev033VLWUKL0",
+    "event_time": 1644939339,
+    "is_ext_shared_channel": false,
+    "team_id": "T030KFTTD",
+    "token": "D9o1J58UNHYqolfqs3ZCR9vj",
+    "type": "event_callback"
+  },
+  "retry_attempt": 0,
+  "retry_reason": "",
+  "type": "events_api"
+}

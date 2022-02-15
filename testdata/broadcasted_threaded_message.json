@@ -1,0 +1,88 @@
+{
+  "accepts_response_payload": false,
+  "envelope_id": "16c4fdb9-b9ea-40b2-a676-f57ee150bd4c",
+  "payload": {
+    "api_app_id": "A032EL23XDM",
+    "authorizations": [
+      {
+        "enterprise_id": null,
+        "is_bot": true,
+        "is_enterprise_install": false,
+        "team_id": "T030KFTTD",
+        "user_id": "U032NL88NNA"
+      }
+    ],
+    "event": {
+      "blocks": [
+        {
+          "block_id": "CjGlQ",
+          "elements": [
+            {
+              "elements": [
+                {
+                  "text": "broadcasted threaded message",
+                  "type": "text"
+                }
+              ],
+              "type": "rich_text_section"
+            }
+          ],
+          "type": "rich_text"
+        }
+      ],
+      "channel": "C03387UAMQR",
+      "channel_type": "channel",
+      "client_msg_id": "cb14aa59-7688-4770-98fc-77712367e815",
+      "event_ts": "1644939511.648459",
+      "root": {
+        "blocks": [
+          {
+            "block_id": "i/T",
+            "elements": [
+              {
+                "elements": [
+                  {
+                    "text": "plain message",
+                    "type": "text"
+                  }
+                ],
+                "type": "rich_text_section"
+              }
+            ],
+            "type": "rich_text"
+          }
+        ],
+        "client_msg_id": "2f316e24-bd8c-4c63-bddb-235b6e95d6cd",
+        "is_locked": false,
+        "latest_reply": "1644939511.648459",
+        "reply_count": 2,
+        "reply_users": [
+          "U030KFTTF"
+        ],
+        "reply_users_count": 1,
+        "team": "T030KFTTD",
+        "text": "plain message",
+        "thread_ts": "1644938961.726289",
+        "ts": "1644938961.726289",
+        "type": "message",
+        "user": "U030KFTTF"
+      },
+      "subtype": "thread_broadcast",
+      "text": "broadcasted threaded message",
+      "thread_ts": "1644938961.726289",
+      "ts": "1644939511.648459",
+      "type": "message",
+      "user": "U030KFTTF"
+    },
+    "event_context": "4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDMwS0ZUVEQiLCJhaWQiOiJBMDMyRUwyM1hETSIsImNpZCI6IkMwMzM4N1VBTVFSIn0",
+    "event_id": "Ev032RB22L95",
+    "event_time": 1644939511,
+    "is_ext_shared_channel": false,
+    "team_id": "T030KFTTD",
+    "token": "D9o1J58UNHYqolfqs3ZCR9vj",
+    "type": "event_callback"
+  },
+  "retry_attempt": 0,
+  "retry_reason": "",
+  "type": "events_api"
+}

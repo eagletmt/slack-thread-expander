@@ -235,11 +235,54 @@ struct ChatPostMessageResponse {
 }
 
 async fn handle_event(payload: EventsApiPayload) -> anyhow::Result<()> {
+    if let Some((channel, message_ts)) = find_threaded_message(payload) {
+        let client = reqwest::Client::new();
+        let token = std::env::var("SLACK_OAUTH_TOKEN")?;
+        let resp: ChatGetPermalinkResponse = client
+            .post("https://slack.com/api/chat.getPermalink")
+            .bearer_auth(&token)
+            .form(&ChatGetPermalinkRequest {
+                channel: channel.clone(),
+                message_ts,
+            })
+            .send()
+            .await?
+            .error_for_status()?
+            .json()
+            .await?;
+        if !resp.ok {
+            anyhow::bail!("chat.getPermalink failed: {}", resp.rest);
+        }
+        let permalink = resp.permalink.unwrap();
+        tracing::info!(%permalink, "translated to permalink");
+
+        let resp: ChatPostMessageResponse = client
+            .post("https://slack.com/api/chat.postMessage")
+            .bearer_auth(&token)
+            .json(&ChatPostMessageRequest {
+                channel,
+                text: permalink,
+            })
+            .send()
+            .await?
+            .error_for_status()?
+            .json()
+            .await?;
+        if !resp.ok {
+            anyhow::bail!("chat.postMessage failed: {}", resp.rest);
+        }
+        let ts = resp.ts.unwrap();
+        tracing::info!(%ts, "posted a permalink");
+    }
+    Ok(())
+}
+
+fn find_threaded_message(payload: EventsApiPayload) -> Option<(String, String)> {
     let event_callback = match payload {
         EventsApiPayload::EventCallback(ec) => ec,
         EventsApiPayload::Other => {
             tracing::info!("ignore non event_callback type");
-            return Ok(());
+            return None;
         }
     };
     let span = tracing::info_span!("MessageEvent", event_id = %event_callback.event_id);
@@ -249,58 +292,72 @@ async fn handle_event(payload: EventsApiPayload) -> anyhow::Result<()> {
         EventCallbackEvent::Message(me) => me,
         EventCallbackEvent::Other => {
             tracing::info!("ignore non message type");
-            return Ok(());
+            return None;
         }
     };
     let event = match message_event {
         MessageEvent::Plain(e) => e,
         MessageEvent::Other => {
             tracing::info!("not a threaded message because subtype is present");
-            return Ok(());
+            return None;
         }
     };
 
     if event.thread_ts.is_none() {
         tracing::info!("not a threaded message because thread_ts is none");
-        return Ok(());
+        return None;
     }
 
-    let client = reqwest::Client::new();
-    let token = std::env::var("SLACK_OAUTH_TOKEN")?;
-    let resp: ChatGetPermalinkResponse = client
-        .post("https://slack.com/api/chat.getPermalink")
-        .bearer_auth(&token)
-        .form(&ChatGetPermalinkRequest {
-            channel: event.channel.clone(),
-            message_ts: event.ts,
-        })
-        .send()
-        .await?
-        .error_for_status()?
-        .json()
-        .await?;
-    if !resp.ok {
-        anyhow::bail!("chat.getPermalink failed: {}", resp.rest);
-    }
-    let permalink = resp.permalink.unwrap();
-    tracing::info!(%permalink, "translated to permalink");
+    Some((event.channel, event.ts))
+}
 
-    let resp: ChatPostMessageResponse = client
-        .post("https://slack.com/api/chat.postMessage")
-        .bearer_auth(&token)
-        .json(&ChatPostMessageRequest {
-            channel: event.channel,
-            text: permalink,
-        })
-        .send()
-        .await?
-        .error_for_status()?
-        .json()
-        .await?;
-    if !resp.ok {
-        anyhow::bail!("chat.postMessage failed: {}", resp.rest);
+#[cfg(test)]
+mod tests {
+    fn load_fixture<P>(path: P) -> super::EventsApiPayload
+    where
+        P: AsRef<std::path::Path>,
+    {
+        let file = std::fs::File::open(std::path::Path::new("./testdata").join(path))
+            .expect("failed to open fixture file");
+        match serde_json::from_reader::<_, super::SlackEvent>(file)
+            .expect("failed to deserialize to SlackEvent")
+        {
+            super::SlackEvent::EventsApi(super::EventsApiEvent { payload, .. }) => {
+                serde_json::from_value(payload).expect("failed to deserialize to EventsApiPayload")
+            }
+            e => panic!("deserialized SlackEvent is not EventsApi: {:?}", e),
+        }
     }
-    let ts = resp.ts.unwrap();
-    tracing::info!(%ts, "posted a permalink");
-    Ok(())
+
+    #[test]
+    fn it_ignores_plain_message() {
+        assert_eq!(
+            super::find_threaded_message(load_fixture("plain_message.json")),
+            None,
+        );
+    }
+
+    #[test]
+    fn it_finds_threaded_message() {
+        assert_eq!(
+            super::find_threaded_message(load_fixture("threaded_message.json")),
+            Some(("C03387UAMQR".to_owned(), "1644939337.956639".to_owned())),
+        );
+        assert_eq!(
+            super::find_threaded_message(load_fixture("threaded_message_changed.json")),
+            None,
+        );
+    }
+
+    #[test]
+    fn it_ignores_broadcasted_threaded_message() {
+        assert_eq!(
+            super::find_threaded_message(load_fixture("broadcasted_threaded_message.json")),
+            None,
+        );
+        assert_eq!(
+            super::find_threaded_message(load_fixture("broadcasted_threaded_message_changed.json")),
+            None,
+        );
+    }
 }
