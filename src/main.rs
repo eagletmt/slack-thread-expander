@@ -44,7 +44,7 @@ async fn main() -> anyhow::Result<()> {
         while let Some(message) = ws_read_stream.try_next().await? {
             match message {
                 tungstenite::Message::Ping(payload) => {
-                    tracing::info!(?payload, "send a pong in response to ping");
+                    tracing::debug!(?payload, "send a pong in response to ping");
                     ws_sink.send(tungstenite::Message::Pong(payload)).await?;
                 }
                 tungstenite::Message::Pong(payload) => {
