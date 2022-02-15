@@ -1,7 +1,17 @@
 use futures_util::SinkExt as _;
 use futures_util::StreamExt as _;
 use futures_util::TryStreamExt as _;
+use structopt::StructOpt as _;
 use tokio_tungstenite::tungstenite;
+
+#[derive(Debug, structopt::StructOpt)]
+struct Opt {
+    #[structopt(
+        long,
+        help = "Enable debug_reconnects=true for debugging WebSocket reconnection"
+    )]
+    enable_debug_reconnects: bool,
+}
 
 #[derive(Debug, serde::Deserialize)]
 struct AppsConnectionsOpenResponse {
@@ -17,6 +27,7 @@ async fn main() -> anyhow::Result<()> {
         std::env::set_var("RUST_LOG", "info");
     }
     tracing_subscriber::fmt::init();
+    let opt = Opt::from_args();
     let slack_app_token = std::env::var("SLACK_APP_TOKEN")
         .or_else(|_| anyhow::bail!("SLACK_APP_TOKEN is not given"))?;
 
@@ -34,8 +45,11 @@ async fn main() -> anyhow::Result<()> {
     }
     let url = resp.url.unwrap();
     tracing::info!(%url, "initiated WebSocket mode");
-    let (mut ws_stream, resp) =
-        tokio_tungstenite::connect_async(format!("{}&debug_reconnects=true", url)).await?;
+    let (mut ws_stream, resp) = if opt.enable_debug_reconnects {
+        tokio_tungstenite::connect_async(format!("{}&debug_reconnects=true", url)).await?
+    } else {
+        tokio_tungstenite::connect_async(url).await?
+    };
     tracing::info!(status = %resp.status(), headers = ?resp.headers(), "connected to WebSocket endpoint");
 
     loop {
@@ -81,8 +95,11 @@ async fn main() -> anyhow::Result<()> {
             anyhow::bail!("failed to open connection: {:?}", resp.rest);
         }
         let url = resp.url.unwrap();
-        let pair =
-            tokio_tungstenite::connect_async(format!("{}&debug_reconnects=true", url)).await?;
+        let pair = if opt.enable_debug_reconnects {
+            tokio_tungstenite::connect_async(format!("{}&debug_reconnects=true", url)).await?
+        } else {
+            tokio_tungstenite::connect_async(url).await?
+        };
         tracing::info!(status = %pair.1.status(), headers = ?pair.1.headers(), "re-connected to WebSocket endpoint");
 
         ws_stream = pair.0;
