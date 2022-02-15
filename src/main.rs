@@ -171,7 +171,8 @@ enum EventCallbackEvent {
 
 #[derive(Debug)]
 enum MessageEvent {
-    Plain(PlainMessageEvent),
+    Plain(CommonMessageEvent),
+    FileShare(CommonMessageEvent),
     Other,
 }
 impl<'de> serde::Deserialize<'de> for MessageEvent {
@@ -180,24 +181,33 @@ impl<'de> serde::Deserialize<'de> for MessageEvent {
         D: serde::Deserializer<'de>,
     {
         #[derive(serde::Deserialize)]
+        #[serde(rename_all = "snake_case")]
+        enum Subtype {
+            FileShare,
+            #[serde(other)]
+            Other,
+        }
+        #[derive(serde::Deserialize)]
         struct SubtypeTagged {
-            subtype: Option<serde_json::Value>,
+            subtype: Option<Subtype>,
             #[serde(flatten)]
             value: serde_json::Value,
         }
         let v = SubtypeTagged::deserialize(deserializer)?;
-        if v.subtype.is_some() {
-            Ok(Self::Other)
-        } else {
-            Ok(Self::Plain(
-                PlainMessageEvent::deserialize(v.value).map_err(serde::de::Error::custom)?,
-            ))
+        match v.subtype {
+            Some(Subtype::FileShare) => Ok(Self::FileShare(
+                CommonMessageEvent::deserialize(v.value).map_err(serde::de::Error::custom)?,
+            )),
+            Some(Subtype::Other) => Ok(Self::Other),
+            None => Ok(Self::Plain(
+                CommonMessageEvent::deserialize(v.value).map_err(serde::de::Error::custom)?,
+            )),
         }
     }
 }
 
 #[derive(Debug, serde::Deserialize)]
-struct PlainMessageEvent {
+struct CommonMessageEvent {
     channel: String,
     thread_ts: Option<String>,
     ts: String,
@@ -296,7 +306,7 @@ fn find_threaded_message(payload: EventsApiPayload) -> Option<(String, String)> 
         }
     };
     let event = match message_event {
-        MessageEvent::Plain(e) => e,
+        MessageEvent::Plain(e) | MessageEvent::FileShare(e) => e,
         MessageEvent::Other => {
             tracing::info!("not a threaded message because subtype is present");
             return None;
@@ -357,6 +367,22 @@ mod tests {
         );
         assert_eq!(
             super::find_threaded_message(load_fixture("broadcasted_threaded_message_changed.json")),
+            None,
+        );
+    }
+
+    #[test]
+    fn it_finds_threaded_file_upload() {
+        assert_eq!(
+            super::find_threaded_message(load_fixture("threaded_file_upload.json")),
+            Some(("C03387UAMQR".to_owned(), "1644940789.277819".to_owned())),
+        );
+    }
+
+    #[test]
+    fn it_ignores_broadcasted_threaded_file_upload() {
+        assert_eq!(
+            super::find_threaded_message(load_fixture("broadcasted_threaded_file_upload.json")),
             None,
         );
     }
