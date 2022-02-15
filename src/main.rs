@@ -48,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
                     ws_sink.send(tungstenite::Message::Pong(payload)).await?;
                 }
                 tungstenite::Message::Pong(payload) => {
-                    tracing::info!(?payload, "received a pong message");
+                    tracing::info!(?payload, "received a pong message, ignoring");
                 }
                 tungstenite::Message::Text(payload) => {
                     tracing::info!(%payload, "received a text message");
@@ -58,7 +58,7 @@ async fn main() -> anyhow::Result<()> {
                     }
                 }
                 tungstenite::Message::Binary(payload) => {
-                    tracing::info!(?payload, "received a binary message");
+                    tracing::info!(?payload, "received a binary message, ignoring");
                 }
                 tungstenite::Message::Close(frame) => {
                     tracing::info!(?frame, "received a close message, closing the stream");
