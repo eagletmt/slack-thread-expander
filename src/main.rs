@@ -1,12 +1,12 @@
+use clap::Parser as _;
 use futures_util::SinkExt as _;
 use futures_util::StreamExt as _;
 use futures_util::TryStreamExt as _;
-use structopt::StructOpt as _;
 use tokio_tungstenite::tungstenite;
 
-#[derive(Debug, structopt::StructOpt)]
-struct Opt {
-    #[structopt(
+#[derive(Debug, clap::Parser)]
+struct Args {
+    #[clap(
         long,
         help = "Enable debug_reconnects=true for debugging WebSocket reconnection"
     )]
@@ -27,7 +27,7 @@ async fn main() -> anyhow::Result<()> {
         std::env::set_var("RUST_LOG", "info");
     }
     tracing_subscriber::fmt::init();
-    let opt = Opt::from_args();
+    let args = Args::parse();
     let slack_app_token = std::env::var("SLACK_APP_TOKEN")
         .or_else(|_| anyhow::bail!("SLACK_APP_TOKEN is not given"))?;
 
@@ -44,7 +44,7 @@ async fn main() -> anyhow::Result<()> {
         anyhow::bail!("failed to open connection: {}", resp.rest);
     }
     let url = resp.url.unwrap();
-    let (mut ws_stream, resp) = if opt.enable_debug_reconnects {
+    let (mut ws_stream, resp) = if args.enable_debug_reconnects {
         tokio_tungstenite::connect_async(format!("{}&debug_reconnects=true", url)).await?
     } else {
         tokio_tungstenite::connect_async(url).await?
@@ -98,7 +98,7 @@ async fn main() -> anyhow::Result<()> {
             anyhow::bail!("failed to open connection: {:?}", resp.rest);
         }
         let url = resp.url.unwrap();
-        let pair = if opt.enable_debug_reconnects {
+        let pair = if args.enable_debug_reconnects {
             tokio_tungstenite::connect_async(format!("{}&debug_reconnects=true", url)).await?
         } else {
             tokio_tungstenite::connect_async(url).await?
