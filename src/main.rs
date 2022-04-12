@@ -77,6 +77,10 @@ async fn main() -> anyhow::Result<()> {
                     tracing::info!(?frame, "received a close message, closing the stream");
                     break;
                 }
+                tungstenite::Message::Frame(_) => {
+                    // https://docs.rs/tungstenite/latest/tungstenite/enum.Message.html#variant.Frame
+                    unreachable!("you're not going to get this value while reading the message")
+                }
             }
         }
         ws_sink.reunite(ws_read_stream)?.close(None).await?;
