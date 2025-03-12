@@ -23,10 +23,14 @@ struct AppsConnectionsOpenResponse {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "info");
-    }
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::builder()
+                .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
+                .from_env_lossy(),
+        )
+        .init();
+
     let args = Args::parse();
     let slack_app_token = std::env::var("SLACK_APP_TOKEN")
         .or_else(|_| anyhow::bail!("SLACK_APP_TOKEN is not given"))?;
@@ -65,7 +69,7 @@ async fn main() -> anyhow::Result<()> {
                 }
                 tungstenite::Message::Text(payload) => {
                     tracing::info!(%payload, "received a text message");
-                    if !handle_text(&mut ws_sink, payload).await? {
+                    if !handle_text(&mut ws_sink, &payload).await? {
                         tracing::info!("disconnect is requested");
                         break;
                     }
@@ -133,12 +137,12 @@ struct EventsApiEvent {
     payload: serde_json::Value,
 }
 
-async fn handle_text<S>(ws_sink: &mut S, payload: String) -> anyhow::Result<bool>
+async fn handle_text<S>(ws_sink: &mut S, payload: &str) -> anyhow::Result<bool>
 where
     S: futures_util::Sink<tungstenite::Message> + Unpin,
     S::Error: std::error::Error + Send + Sync + 'static,
 {
-    let event: SlackEvent = serde_json::from_str(&payload)?;
+    let event: SlackEvent = serde_json::from_str(payload)?;
     match event {
         SlackEvent::Hello(hello_event) => {
             tracing::info!(app_id = %hello_event.connection_info.app_id);
@@ -155,11 +159,12 @@ where
 
             tracing::info!(envelope_id = %events_api_event.envelope_id, "send an acknowledge");
             ws_sink
-                .send(tungstenite::Message::Text(serde_json::to_string(
-                    &Acknowledge {
+                .send(tungstenite::Message::Text(
+                    serde_json::to_string(&Acknowledge {
                         envelope_id: events_api_event.envelope_id,
-                    },
-                )?))
+                    })?
+                    .into(),
+                ))
                 .await?;
             Ok(true)
         }
