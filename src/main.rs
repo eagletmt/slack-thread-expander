@@ -236,6 +236,7 @@ struct CommonMessageEvent {
     channel: String,
     thread_ts: Option<String>,
     ts: String,
+    bot_id: Option<String>,
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -338,6 +339,11 @@ fn find_threaded_message(payload: EventsApiPayload) -> Option<(String, String)> 
         }
     };
 
+    if event.bot_id.is_some() {
+        tracing::info!("ignore a message posted by a bot");
+        return None;
+    }
+
     if event.thread_ts.is_none() {
         tracing::info!("not a threaded message because thread_ts is none");
         return None;
@@ -392,6 +398,14 @@ mod tests {
         );
         assert_eq!(
             super::find_threaded_message(load_fixture("broadcasted_threaded_message_changed.json")),
+            None,
+        );
+    }
+
+    #[test]
+    fn it_ignores_threaded_bot_message() {
+        assert_eq!(
+            super::find_threaded_message(load_fixture("threaded_bot_message.json")),
             None,
         );
     }
